@@ -1,0 +1,13 @@
+Sections:
+  ✔ amount and one-time vs monthly @done(21-10-24 23:04)
+  ✔ First Name Last Name Email Address Phone @done(21-10-24 23:04)
+  ✔ billing address @done(21-10-24 23:04)
+  ✔ Payment information and submit @done(21-10-24 23:04)
+
+To-do:
+  ☐ Credit Card as one payment option, with EFT as another when Monthly is selected
+  ✔ Adapt display for four suggested gift amounts instead of six @done(21-10-24 23:04)
+  ✔ Keep opt-in hidden, but selected @done(21-10-24 23:04)
+  ✔ Submit button has GIVE $AMOUNT format @done(21-10-24 23:04)
+  ✔ Thank you page will replace the owl with the candle that flickers and keep the confetti @done(21-10-25 00:20)
+  ✔ Confirm that the lightbox appends parent page URL arguments to the iFrame URL @done(21-10-25 00:29)
