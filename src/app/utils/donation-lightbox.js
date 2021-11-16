@@ -9,7 +9,7 @@ export class DonationLightbox {
       title: "",
       paragraph: "",
       footer: "",
-      bg_color: "#FFFF00",
+      bg_color: "#FFFFFF",
       txt_color: "#252525",
       form_color: "#252525",
       url: null,
@@ -79,16 +79,10 @@ export class DonationLightbox {
       );
     });
     window.addEventListener("message", this.receiveMessage.bind(this), false);
-    // This is for disable mobile view
-    const viewportWidth = Math.max(
-      document.documentElement.clientWidth || 0,
-      window.innerWidth || 0
-    );
     if (
       typeof window.DonationLightboxOptions !== "undefined" &&
       window.DonationLightboxOptions.hasOwnProperty("url") &&
-      !this.getCookie() &&
-      viewportWidth > 899
+      !this.getCookie()
     ) {
       this.build(window.DonationLightboxOptions.url);
     }
