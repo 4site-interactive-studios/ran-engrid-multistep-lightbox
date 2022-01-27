@@ -14,10 +14,16 @@ export class DonationLightbox {
       form_color: "#252525",
       url: null,
       cookie_hours: 24,
+      cookie_name: "HideDonationLightbox",
+      trigger: 0, // int-seconds, px-scroll location, %-scroll location, exit-mouse leave
+      gtm_open_event_name: "donation_lightbox_display",
+      gtm_close_event_name: "donation_lightbox_closed",
+      gtm_suppressed_event_name: "donation_lightbox_supressed",
     };
     this.donationinfo = {};
     this.options = { ...this.defaultOptions };
     this.animationEnd = false;
+    this.triggered = false;
     this.init();
   }
   setOptions(options) {
@@ -81,10 +87,50 @@ export class DonationLightbox {
     window.addEventListener("message", this.receiveMessage.bind(this), false);
     if (
       typeof window.DonationLightboxOptions !== "undefined" &&
-      window.DonationLightboxOptions.hasOwnProperty("url") &&
-      !this.getCookie()
+      window.DonationLightboxOptions.hasOwnProperty("url")
     ) {
-      this.build(window.DonationLightboxOptions.url);
+      this.loadOptions();
+      const triggerType = this.getTriggerType(this.options.trigger);
+      console.log("Trigger type: ", triggerType);
+      if (!this.getCookie()) {
+        if (triggerType === false) {
+          this.options.trigger = 2000;
+        }
+        if (triggerType === "seconds") {
+          this.options.trigger = Number(this.options.trigger) * 1000;
+        }
+        if (triggerType === "seconds" || triggerType === false) {
+          window.setTimeout(() => {
+            this.build(window.DonationLightboxOptions.url);
+          }, this.options.trigger);
+        }
+        if (triggerType === "exit") {
+          document.body.addEventListener("mouseout", (e) => {
+            if (e.clientY < 0 && !this.triggered) {
+              this.build(window.DonationLightboxOptions.url);
+              this.triggered = true;
+            }
+          });
+        }
+        if (triggerType === "pixels") {
+          document.addEventListener(
+            "scroll",
+            this.scrollTriggerPx.bind(this),
+            true
+          );
+        }
+        if (triggerType === "percent") {
+          document.addEventListener(
+            "scroll",
+            this.scrollTriggerPercent.bind(this),
+            true
+          );
+        }
+      } else {
+        window.dataLayer.push({
+          event: this.options.gtm_suppressed_event_name,
+        });
+      }
     }
   }
   build(event) {
@@ -97,7 +143,6 @@ export class DonationLightbox {
       href = new URL(element.href);
     } else {
       href = new URL(event);
-      this.loadOptions();
     }
     // Delete overlay if exists
     if (this.overlay) {
@@ -185,13 +230,13 @@ export class DonationLightbox {
     this.open();
   }
   open() {
-    window.dataLayer.push({ event: "donation_lightbox_display" });
+    window.dataLayer.push({ event: this.options.gtm_open_event_name });
     this.overlay.classList.remove("is-hidden");
     document.body.classList.add("has-DonationLightbox");
   }
 
   close(e) {
-    window.dataLayer.push({ event: "donation_lightbox_closed" });
+    window.dataLayer.push({ event: this.options.gtm_close_event_name });
     e.preventDefault();
     this.overlay.classList.add("is-hidden");
     document.body.classList.remove("has-DonationLightbox");
@@ -431,7 +476,7 @@ export class DonationLightbox {
   setCookie(hours = 24, path = "/") {
     const expires = new Date(Date.now() + hours * 36e5).toUTCString();
     document.cookie =
-      "HideDonationLightbox" +
+      this.options.cookie_name +
       "=" +
       encodeURIComponent(true) +
       "; expires=" +
@@ -441,16 +486,13 @@ export class DonationLightbox {
   }
 
   getCookie() {
-    return document.cookie.split("; ").reduce((r, v) => {
-      const parts = v.split("=");
-      return parts[0] === "HideDonationLightbox"
-        ? decodeURIComponent(parts[1])
-        : r;
-    }, "");
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${this.options.cookie_name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
   }
 
   deleteCookie(path = "/") {
-    setCookie("HideDonationLightbox", "", -1, path);
+    setCookie(this.options.cookie_name, "", -1, path);
   }
   loadScript(url, callback) {
     const script = document.createElement("script");
@@ -460,5 +502,46 @@ export class DonationLightbox {
     script.onload = () => {
       if (callback) callback();
     };
+  }
+
+  // Trigger Functions
+  getTriggerType(trigger) {
+    /**
+     * Any integer (e.g., 5) -> Number of seconds to wait before triggering the lightbox
+     * Any pixel (e.g.: 100px) -> Number of pixels to scroll before trigger the lightbox
+     * Any percentage (e.g., 30%) -> Percentage of the height of the page to scroll before triggering the lightbox
+     * The word exit -> Triggers the lightbox when the mouse leaves the DOM area (exit intent).
+     * With 0 as default, the lightbox will trigger as soon as the page finishes loading.
+     */
+    console.log("Trigger Value: ", trigger);
+
+    if (!isNaN(trigger)) {
+      return "seconds";
+    } else if (trigger.includes("px")) {
+      return "pixels";
+    } else if (trigger.includes("%")) {
+      return "percent";
+    } else if (trigger.includes("exit")) {
+      return "exit";
+    } else {
+      return false;
+    }
+  }
+  scrollTriggerPx(e) {
+    const triggerValue = Number(this.options.trigger.replace("px", ""));
+    if (window.scrollY >= triggerValue && !this.triggered) {
+      this.build(window.DonationLightboxOptions.url);
+      this.triggered = true;
+    }
+  }
+  scrollTriggerPercent(e) {
+    const triggerValue = Number(this.options.trigger.replace("%", ""));
+    const clientHeight = document.documentElement.clientHeight;
+    const scrollHeight = document.documentElement.scrollHeight - clientHeight;
+    const target = (triggerValue / 100) * scrollHeight;
+    if (window.scrollY >= target && !this.triggered) {
+      this.build(window.DonationLightboxOptions.url);
+      this.triggered = true;
+    }
   }
 }
