@@ -1,14 +1,11 @@
 {
   "folders": [
-	{
-		"path": "."
-	},
-	{
-		"path": "../4site-2020/wp-content/plugins/engrid-wordpress-multistep"
-	},
-	{
-		"path": "../ifaw-lightboxes/sign-up-lightbox/src/app/utils"
-	}
-],
+    {
+      "path": "."
+    },
+    {
+      "path": "../engrid-wordpress-multistep"
+    }
+  ],
   "settings": {}
 }

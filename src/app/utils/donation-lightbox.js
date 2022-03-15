@@ -15,6 +15,7 @@ export class DonationLightbox {
       url: null,
       cookie_hours: 24,
       cookie_name: "HideDonationLightbox",
+      cookie_event: "display", // display, close
       trigger: 0, // int-seconds, px-scroll location, %-scroll location, exit-mouse leave
       gtm_open_event_name: "donation_lightbox_display",
       gtm_close_event_name: "donation_lightbox_closed",
@@ -227,6 +228,10 @@ export class DonationLightbox {
     });
     this.overlay = overlay;
     document.body.appendChild(overlay);
+    // Check the cookie event
+    if (this.options.cookie_event === "display") {
+      this.setCookie(this.options.cookie_hours);
+    }
     this.open();
   }
   open() {
