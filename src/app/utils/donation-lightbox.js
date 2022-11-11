@@ -5,21 +5,28 @@ export class DonationLightbox {
     window.dataLayer = window.dataLayer || [];
     this.defaultOptions = {
       image: "",
+      video: "",
+      autoplay: false,
+      divider: "",
       logo: "",
+      logo_position_top: "25px",
+      logo_position_left: "25px",
+      logo_position_right: 0,
+      logo_position_bottom: 0,
       title: "",
       paragraph: "",
       footer: "",
-      bg_color: "#FFFFFF",
-      txt_color: "#252525",
-      form_color: "#252525",
+      bg_color: "#0a0a0a",
+      txt_color: "#ffffff",
+      form_color: "#0a0a0a",
       url: null,
       cookie_hours: 24,
       cookie_name: "HideDonationLightbox",
-      cookie_event: "display", // display, close
       trigger: 0, // int-seconds, px-scroll location, %-scroll location, exit-mouse leave
       gtm_open_event_name: "donation_lightbox_display",
       gtm_close_event_name: "donation_lightbox_closed",
       gtm_suppressed_event_name: "donation_lightbox_supressed",
+      confetti: ["#0a0a0a", "#FFFFFF", "#6a9913"],
     };
     this.donationinfo = {};
     this.options = { ...this.defaultOptions };
@@ -170,20 +177,35 @@ export class DonationLightbox {
           }; color: ${this.options.txt_color}">
             ${
               this.options.logo
-                ? `<img class="dl-logo" src="${this.options.logo}" alt="${this.options.title}">`
+                ? `<img class="dl-logo" src="${this.options.logo}" alt="${this.options.title}" style="top: ${this.options.logo_position_top}; left: ${this.options.logo_position_left}; bottom: ${this.options.logo_position_bottom}; right: ${this.options.logo_position_right}; filter: brightness(0) invert(1);">`
                 : ""
             }
-            <div class="dl-container">
-              <img class="dl-hero" src="${this.options.image}" alt="${
-      this.options.title
-    }" />
-              <div class="dl-container-inner">
+            <a href="#" class="dl-close-viewmore">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <path fill="currentColor" d="M7.214.786c.434-.434 1.138-.434 1.572 0 .433.434.433 1.137 0 1.571L4.57 6.572h10.172c.694 0 1.257.563 1.257 1.257s-.563 1.257-1.257 1.257H4.229l4.557 4.557c.433.434.433 1.137 0 1.571-.434.434-1.138.434-1.572 0L0 8 7.214.786z"></path>
+              </svg>
+            </a>
+            <div class="dl-container" style="background-color: ${
+              this.options.bg_color
+            }; color: ${this.options.txt_color}">
+              ${this.loadHero()}
+              ${
+                this.options.divider
+                  ? `<img class="dl-divider" src="${this.options.divider}" alt="Divider">`
+                  : ""
+              }
+              <div class="dl-container-inner" style="background-color: ${
+                this.options.bg_color
+              }; color: ${this.options.txt_color}">
                 <h1 class="dl-title" style="color: ${this.options.txt_color}">${
       this.options.title
     }</h1>
                 <p class="dl-paragraph" style="color: ${
                   this.options.txt_color
                 }">${this.options.paragraph}</p>
+                <a class="dl-viewmore" href="#"style="color: ${
+                  this.options.txt_color
+                }; border-color: ${this.options.txt_color}">View More</a>
               </div>
               <div class="dl-celebration">
                 <div class="frame frame1">
@@ -195,13 +217,13 @@ export class DonationLightbox {
           </div>
           <div class="right">
             <a href="#" class="dl-button-close"></a>
-            <div class="dl-loading" style="background-color: #252525">
+            <div class="dl-loading">
               <div class="spinner">
                 <div class="double-bounce1"></div>
                 <div class="double-bounce2"></div>
               </div>
             </div>
-            <iframe allow="payment" loading='lazy' id='dl-iframe' width='100%' scrolling='no' class='dl-iframe' src='${href}' frameborder='0' allowfullscreen></iframe>
+            <iframe allow='payment' loading='lazy' id='dl-iframe' width='100%' scrolling='no' class='dl-iframe' src='${href}' frameborder='0' allowfullscreen></iframe>
           </div>
         </div>
         <div class="dl-footer">
@@ -221,6 +243,48 @@ export class DonationLightbox {
         this.close(e);
       }
     });
+
+    const closeViewMore = overlay.querySelector(".dl-close-viewmore");
+    closeViewMore.addEventListener("click", (e) => {
+      e.preventDefault();
+      overlay.querySelector(".left").classList.remove("view-more");
+    });
+
+    const viewmore = overlay.querySelector(".dl-viewmore");
+    viewmore.addEventListener("click", (e) => {
+      e.preventDefault();
+      overlay.querySelector(".left").classList.add("view-more");
+    });
+
+    const videoElement = overlay.querySelector("video");
+    if (videoElement) {
+      const playButton = overlay.querySelector(".btn-play");
+      if (playButton) {
+        playButton.addEventListener("click", () => {
+          if (videoElement) {
+            if (videoElement.paused) {
+              videoElement.play();
+            } else {
+              videoElement.pause();
+            }
+          }
+        });
+      }
+      videoElement.addEventListener("play", (event) => {
+        overlay.querySelector(".dl-container").classList.add("playing");
+        overlay.querySelector(".dl-container").classList.remove("paused");
+      });
+      videoElement.addEventListener("pause", (event) => {
+        overlay.querySelector(".dl-container").classList.remove("playing");
+        overlay.querySelector(".dl-container").classList.add("paused");
+      });
+      videoElement.addEventListener("ended", (event) => {
+        overlay.querySelector(".dl-container").classList.remove("playing");
+        overlay.querySelector(".dl-container").classList.remove("paused");
+        videoElement.load();
+      });
+    }
+
     document.addEventListener("keyup", (e) => {
       if (e.key === "Escape") {
         closeButton.click();
@@ -228,10 +292,6 @@ export class DonationLightbox {
     });
     this.overlay = overlay;
     document.body.appendChild(overlay);
-    // Check the cookie event
-    if (this.options.cookie_event === "display") {
-      this.setCookie(this.options.cookie_hours);
-    }
     this.open();
   }
   open() {
@@ -251,7 +311,6 @@ export class DonationLightbox {
   }
   // Receive a message from the child iframe
   receiveMessage(event) {
-    console.log("DonationLightbox: receiveMessage: event: ", event);
     const message = event.data;
     if (message.key === "status") {
       this.status(message.value, event);
@@ -343,130 +402,36 @@ export class DonationLightbox {
       ticks: 60,
       zIndex: 100000,
       useWorker: false,
+      colors: this.options.confetti,
     };
 
     const randomInRange = (min, max) => {
       return Math.random() * (max - min) + min;
     };
 
-    const interval = setInterval(function () {
+    const interval = setInterval(() => {
       const timeLeft = animationEnd - Date.now();
 
       if (timeLeft <= 0) {
         return clearInterval(interval);
       }
-
-      const particleCount = 50 * (timeLeft / duration);
-      // since particles fall down, start a bit higher than random
-      confetti(
-        Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        })
-      );
-      confetti(
-        Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        })
-      );
+      if (this.options.confetti.length > 0) {
+        const particleCount = 50 * (timeLeft / duration);
+        // since particles fall down, start a bit higher than random
+        confetti(
+          Object.assign({}, defaults, {
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          })
+        );
+        confetti(
+          Object.assign({}, defaults, {
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          })
+        );
+      }
     }, 250);
-    // Left Animation
-    const leftContainer = document.querySelector(
-      `#${this.overlayID} .dl-content .left`
-    );
-    if (leftContainer) {
-      leftContainer.classList.add("celebrating");
-      const logo = leftContainer.querySelector(".dl-logo");
-      this.loadScript(
-        "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.2.0/gsap.min.js",
-        () => {
-          const tl = gsap.timeline();
-          if (logo) {
-            tl.to(logo, {
-              duration: 1,
-              x: "-50%",
-              left: "50%",
-              top: "155px",
-              maxWidth: "185px",
-              scale: 1.5,
-              ease: "power1.inOut",
-            });
-          }
-          tl.to(
-            ".frame1",
-            {
-              bottom: "200px",
-              duration: 1,
-              ease: "power1.inOut",
-            },
-            ">-1"
-          );
-        }
-      );
-    }
-  }
-  startBunny() {
-    this.loadScript(
-      "https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.14/lottie.min.js",
-      () => {
-        const tl2 = gsap.timeline();
-        tl2.set([...document.querySelectorAll(".frame3 .phrase")].slice(1), {
-          right: "10000vw",
-        });
-        tl2.to(".frame2", {
-          opacity: "1",
-          duration: 1,
-          ease: "power1.inOut",
-        });
-        tl2.add(() => {
-          const anim = bodymovin.loadAnimation({
-            container: document.querySelector("#bunnyAnimation"),
-            renderer: "svg",
-            loop: false,
-            autoplay: true,
-            path: "https://000665513.codepen.website/data.json",
-          });
-          anim.addEventListener("complete", () => {
-            anim.goToAndPlay(130, true);
-            this.startSlider();
-          });
-        }, "+=0.5");
-        // Make the text grow
-        tl2.fromTo(".frame3", 1, { scale: 0 }, { scale: 1 }, "+=6.5");
-      }
-    );
-  }
-  startSlider() {
-    // return;
-    if (this.animationEnd) {
-      return;
-    }
-    let $slides = [...document.querySelectorAll(".frame3 .phrase")];
-    let currentSlide = 0;
-
-    TweenLite.set($slides.slice(1), { right: "600px" }); // Hide all but the first slide
-
-    const nextSlide = function () {
-      TweenLite.to($slides[currentSlide], 1, { right: "-600px" });
-
-      if (currentSlide < $slides.length - 1) {
-        currentSlide++;
-      } else {
-        currentSlide = 0;
-      }
-
-      TweenLite.fromTo(
-        $slides[currentSlide],
-        1,
-        { right: "600px" },
-        { right: "0px" }
-      );
-      TweenLite.delayedCall(3, nextSlide);
-    };
-    TweenLite.delayedCall(0.1, nextSlide); // Start the timer
-
-    this.animationEnd = true;
   }
   shake() {
     const element = document.querySelector(".dl-content");
@@ -548,5 +513,28 @@ export class DonationLightbox {
       this.build(window.DonationLightboxOptions.url);
       this.triggered = true;
     }
+  }
+  loadHero() {
+    if (!this.options.video) {
+      return `<img class="dl-hero" src="${this.options.image}" alt="${this.options.title}" />`;
+    }
+    const autoplay = this.options.autoplay || false;
+    let markup = autoplay
+      ? `<video autoplay muted loop playsinline`
+      : `<video playsinline`;
+    markup += ` poster="${this.options.image}">`;
+    markup += `<source src="${this.options.video}" type="video/mp4">`;
+    markup += `</video>`;
+    return `<div class="dl-hero">
+    ${markup}
+    ${
+      !autoplay
+        ? `<div class="btn-play">
+              <svg class="play-svg" xmlns="http://www.w3.org/2000/svg" width="26" height="31" viewBox="0 0 55.127 61.182"><g id="Group_38215" data-name="Group 38215" transform="translate(30 35)" fill="currentColor"><g id="play-button-arrowhead_1_" data-name="play-button-arrowhead (1)" transform="translate(-30 -35)"><path id="Path_18" data-name="Path 18" d="M18.095,1.349C12.579-1.815,8.107.777,8.107,7.134v46.91c0,6.363,4.472,8.952,9.988,5.791l41-23.514c5.518-3.165,5.518-8.293,0-11.457Z" transform="translate(-8.107 0)"/></g></g></svg>
+              <svg class="pause-svg" xmlns="http://www.w3.org/2000/svg" width="31" height="31" viewBox="0 0 31 31"><path d="M10 31h-6v-31h6v31zm15-31h-6v31h6v-31z" fill="currentColor" /></svg>
+            </div>`
+        : ""
+    }
+    </div>`;
   }
 }
