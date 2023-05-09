@@ -76,6 +76,18 @@ export class DonationLightbox {
     if ("form_color" in data) {
       this.options.form_color = data.form_color;
     }
+    if ("logo_position_top" in data) {
+      this.options.logo_position_top = data.logo_position_top;
+    }
+    if ("logo_position_left" in data) {
+      this.options.logo_position_left = data.logo_position_left;
+    }
+    if ("logo_position_right" in data) {
+      this.options.logo_position_right = data.logo_position_right;
+    }
+    if ("logo_position_bottom" in data) {
+      this.options.logo_position_bottom = data.logo_position_bottom;
+    }
   }
   init() {
     console.log("DonationLightbox: init");
@@ -148,8 +160,10 @@ export class DonationLightbox {
       // Get clicked element
       let element = event.target;
       this.loadOptions(element);
+      this.context = 'object';
       href = new URL(element.href);
     } else {
+      this.context = 'default';
       href = new URL(event);
     }
     // Delete overlay if exists
@@ -210,7 +224,7 @@ export class DonationLightbox {
               <div class="dl-celebration">
                 <div class="frame frame1">
                     <h3>THANK YOU,</h3>
-                    <h2 class="name">Fernando!</h2>
+                    <h2 class="name">Friend!</h2>
                 </div>
               </div>
             </div>
@@ -308,6 +322,9 @@ export class DonationLightbox {
     if (this.options.url) {
       this.setCookie(this.options.cookie_hours);
     }
+
+    let event = new CustomEvent("multistep-lightbox", { detail: { id: this.overlayID, action: 'closed', context: this.context }} );
+    document.dispatchEvent(event);
   }
   // Receive a message from the child iframe
   receiveMessage(event) {
