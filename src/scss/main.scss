@@ -190,7 +190,8 @@ body.has-DonationLightbox {
 
         .dl-divider {
           position: absolute;
-          transform: translateY(calc(-99% + 2px));
+          bottom: 169px;
+          //transform: translateY(calc(-99% + 2px));
           width: 100%;
           z-index: 10;
           transition: 0.3s margin-top ease-in-out, 0.3s transform ease-in-out,
@@ -206,7 +207,8 @@ body.has-DonationLightbox {
               }
             }
             .dl-divider {
-              transform: scale(1.05) translateY(calc(-100% - -2px));
+              //transform: scale(1.05) translateY(calc(-100% - -2px));
+              transform: scale(1.05) translateY(-2px);
             }
             .dl-viewmore {
               opacity: 1;
@@ -214,7 +216,7 @@ body.has-DonationLightbox {
           }
           &.playing {
             .dl-divider {
-              transform: translateY(-99%);
+              //transform: translateY(100%);
             }
             .btn-play {
               .pause-svg {
@@ -227,7 +229,7 @@ body.has-DonationLightbox {
           }
           &.paused {
             .dl-divider {
-              transform: translateY(-99%);
+              transform: translateY(0%);
             }
           }
         }
