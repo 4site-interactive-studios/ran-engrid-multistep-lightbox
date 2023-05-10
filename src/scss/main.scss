@@ -216,7 +216,7 @@ body.has-DonationLightbox {
           }
           &.playing {
             .dl-divider {
-              //transform: translateY(100%);
+              transform: translateY(100%);
             }
             .btn-play {
               .pause-svg {
@@ -430,6 +430,7 @@ body.has-DonationLightbox {
         display: flex;
         margin: auto;
         box-sizing: border-box;
+        z-index: 10;
         @include mq(desktop) {
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
