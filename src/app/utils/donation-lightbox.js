@@ -158,12 +158,12 @@ export class DonationLightbox {
     let href = null;
     if (typeof event === "object") {
       // Get clicked element
-      let element = event.target;
+      let element = event.target.closest("[data-donation-lightbox]");
       this.loadOptions(element);
-      this.context = 'object';
+      this.context = "object";
       href = new URL(element.href);
     } else {
-      this.context = 'default';
+      this.context = "default";
       href = new URL(event);
     }
     // Delete overlay if exists
@@ -323,7 +323,9 @@ export class DonationLightbox {
       this.setCookie(this.options.cookie_hours);
     }
 
-    let event = new CustomEvent("multistep-lightbox", { detail: { id: this.overlayID, action: 'closed', context: this.context }} );
+    let event = new CustomEvent("multistep-lightbox", {
+      detail: { id: this.overlayID, action: "closed", context: this.context },
+    });
     document.dispatchEvent(event);
   }
   // Receive a message from the child iframe
